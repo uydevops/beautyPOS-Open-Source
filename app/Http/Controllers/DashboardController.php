@@ -11,8 +11,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $this->data['services']= DB::table('services')->get();
-        dd($this->data['services']);
+     
         return view('dashboard');
     }
 

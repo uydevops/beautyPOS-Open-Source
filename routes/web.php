@@ -12,6 +12,7 @@ use App\Http\Controllers\CampaignsController;
 use App\Http\Controllers\EmployeesController;
 use App\Http\Controllers\ServicesController;
 use App\Http\Controllers\CategoriesController;
+use App\Http\Controllers\AjaxController;
 use App\Http\Middleware\AuthMiddleware;
 
 Route::middleware('guest')->group(function () {
@@ -85,6 +86,11 @@ Route::group(['middleware' => AuthMiddleware::class], function () {
 
 
 
+
+    //ajax Controller
+
+    Route::get('/randevuServisleri', [AjaxController::class, 'selectedServices'])->name('ajax.selectedServices');
+    Route::get('/emptyDate/{dmy}', [AjaxController::class, 'emptyDate'])->name('ajax.emptyDate');
 
 
 
