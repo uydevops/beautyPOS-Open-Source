@@ -36,7 +36,7 @@ return new class extends Migration
             $table->integer('last_activity')->index();
         });
 
-     
+
 
         // Rezervasyonlar
         Schema::create('reservations', function (Blueprint $table) {
@@ -56,6 +56,7 @@ return new class extends Migration
             $table->string('name')->comment('Masa Adı');
             $table->integer('capacity')->comment('Kapasite');
             $table->text('status')->default('0')->comment('Masa Durumu');
+            $table->text('employee_id')->nullable()->comment('İlgili Çalışan ID');
         });
 
 
@@ -114,90 +115,96 @@ return new class extends Migration
 
         Schema::create('employees', function (Blueprint $table) {
             $table->id()->comment('Çalışan ID');
-            $table->string('name')->comment('Çalışan Adı');
-            $table->decimal('salary', 10, 2)->comment('Maaş');
+            $table->text('name')->comment('Çalışan Adı'); // Çalışan adı
+            $table->decimal('salary', 10, 2)->comment('Maaş'); // Maaş
             $table->integer('leave_days')->default(0)->comment('Kullanılan İzin Günleri'); // Kullanılan izin günleri
-            $table->integer('annual_leave_days')->default(0)->comment('Yıllık İzin Günleri'); // Yıllık izin günleri
+            $table->text('annual_leave_days')->comment(' İzin Günleri'); // Yıllık izin günleri
+            $table->text('position')->comment('Pozisyon'); // Çalışanın pozisyonu
+            $table->text('phone')->nullable()->comment('Telefon Numarası'); // Çalışanın telefon numarası
+            $table->date('hire_date')->nullable()->comment('İşe Giriş Tarihi'); // Çalışanın işe giriş tarihi
+            $table->text('email')->unique()->comment('E-posta Adresi'); // Çalışanın e-posta adresi
+            $table->text('skills')->nullable()->comment('Beceriler'); // Çalışanın becerileri
+            $table->text('table_id')->nullable()->comment('Sorumlu Olduğu Oda'); // Çalışanın sorumlu olduğu oda
+            $table->boolean('is_active')->default(true)->comment('Aktif Durumu'); // Çalışanın aktif durumu
             $table->timestamps();
         });
 
-        Schema::create('leave_requests', function (Blueprint $table) {
-            $table->id()->comment('İzin Talebi ID');
-            $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade')->comment('Çalışan ID');
-            $table->date('start_date')->comment('İzin Başlangıç Tarihi');
-            $table->date('end_date')->comment('İzin Bitiş Tarihi');
-            $table->integer('days')->comment('Kullanılan İzin Günleri');
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending')->comment('İzin Talebi Durumu');
+
+
+        Schema::create('sms_send_settings', function (Blueprint $table) {
+            $table->id();
+            $table->string('username')->nullable()->comment('Username');
+            $table->string('password')->nullable()->comment('Password');
+            $table->string('title')->nullable()->comment('Title');
+            $table->string('originator')->nullable()->comment(comment: 'Originator');
+            $table->integer('quota')->default(0)->comment('Kota');
             $table->timestamps();
         });
 
 
-        Schema::create('payroll', function (Blueprint $table) {
-            $table->id()->comment('Bordro ID');
-            $table->unsignedBigInteger('employee_id')->comment('Çalışan ID');
-            $table->decimal('salary', 10, 2)->comment('Maaş Tutarı');
-            $table->decimal('tax', 10, 2)->comment('Vergi Kesintisi');
-            $table->decimal('social_security', 10, 2)->comment('Sosyal Güvenlik Kesintisi');
+        Schema::create('customers', function (Blueprint $table) {
+            $table->id(); // Unique ID for each customer
+            $table->string('first_name', 100); // First name of the customer
+            $table->string('last_name', 100); // Last name of the customer
+            $table->string('email')->unique(); // Email of the customer
+            $table->string('phone', 20)->nullable(); // Phone number
+            $table->string('password')->nullable(); // Password
+            $table->date('date_of_birth')->nullable(); // Date of birth
+            $table->enum('gender', ['erkek', 'kadin', 'diger'])->nullable(); // Gender
+            $table->string('address_line1')->nullable(); // Address line 1
+            $table->string('address_line2')->nullable(); // Address line 2
+            $table->string('city', 100)->nullable(); // City
+            $table->string('state', 100)->nullable(); // State or region
+            $table->string('postal_code', 20)->nullable(); // Postal/ZIP code
+            $table->string('country', 100)->default('Turkey'); // Country, default to Turkey
+            $table->boolean('is_vip')->default(false); // VIP status
+            $table->integer('total_visits')->default(0); // Total visits to the beauty center
+            $table->decimal('total_spent', 10, 2)->default(0.00); // Total amount spent by the customer
+            $table->date('last_visit')->nullable(); // Date of last visit
+            $table->string('preferred_services')->nullable(); // Preferred services (e.g., "manicure,pedicure")
+            $table->string('notes', 500)->nullable(); // Additional notes about the customer
+            $table->timestamps(); // Created at and updated at
+            $table->softDeletes(); // Soft delete to archive customers
+        });
+
+
+
+        Schema::create('campaigns', function (Blueprint $table) {
+            $table->id();
+            $table->string('campaign_name');
+            $table->string('campaign_type');
+            $table->string('campaign_details');
+            $table->string('send_type');
+            $table->date('date');
+        });
+
+
+        Schema::create('categories', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique()->comment('Kategori adı, örneğin: Saç Bakımı, Cilt Bakımı');
+            $table->text('description')->nullable()->comment('Kategori hakkında açıklama');
+            $table->text('image')->nullable()->comment('Kategori görseli');
+
+            $table->boolean('is_active')->default(true)->comment('Kategori aktif mi?');
             $table->timestamps();
         });
 
-        // Finansal Raporlama
-        Schema::create('financial_reports', function (Blueprint $table) {
-            $table->id()->comment('Finansal Rapor ID');
-            $table->enum('report_type', ['income_statement', 'balance_sheet', 'cash_flow'])->comment('Rapor Türü');
-            $table->text('details')->comment('Rapor Detayları');
-            $table->timestamps();
-        });
-
-        // Restoran Yönetimi
-        Schema::create('menu_items', function (Blueprint $table) {
-            $table->id()->comment('Menü Öğesi ID');
-            $table->string('name')->comment('Menü Öğesi Adı');
-            $table->decimal('price', 10, 2)->comment('Fiyat');
-            $table->text('description')->nullable()->comment('Açıklama');
-            $table->timestamps();
-        });
-
-        Schema::create('orders', function (Blueprint $table) {
-            $table->id()->comment('Sipariş ID');
-            $table->unsignedBigInteger('table_id')->comment('Masa ID');
-            $table->unsignedBigInteger('menu_item_id')->comment('Menü Öğesi ID');
-            $table->integer('quantity')->comment('Adet');
-            $table->decimal('total_price', 10, 2)->comment('Toplam Fiyat');
-            $table->enum('status', ['pending', 'served', 'cancelled'])->default('pending')->comment('Sipariş Durumu');
-            $table->timestamps();
-        });
-
-      
-        // Stok Yönetimi
-        Schema::create('inventory', function (Blueprint $table) {
-            $table->id()->comment('Envanter ID');
-            $table->string('item_name')->comment('Ürün Adı');
-            $table->integer('quantity')->comment('Adet');
-            $table->decimal('price', 10, 2)->comment('Fiyat');
-            $table->timestamps();
-        });
-
-        Schema::create('suppliers', function (Blueprint $table) {
-            $table->id()->comment('Tedarikçi ID');
-            $table->string('supplier_name')->comment('Tedarikçi Adı');
-            $table->string('contact_info')->nullable()->comment('İletişim Bilgileri');
-            $table->timestamps();
-        });
-
-        Schema::create('inventory_purchases', function (Blueprint $table) {
-            $table->id()->comment('Envanter Alımı ID');
-            $table->unsignedBigInteger('supplier_id')->comment('Tedarikçi ID');
-            $table->unsignedBigInteger('inventory_id')->comment('Envanter ID');
-            $table->integer('quantity')->comment('Adet');
-            $table->decimal('total_cost', 10, 2)->comment('Toplam Maliyet');
+        Schema::create('services', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->comment('Hizmetin adı, örneğin: saç kesimi, manikür');
+            $table->text('description')->nullable()->comment('Hizmetin açıklaması');
+            $table->decimal('price', 10, 2)->comment('Hizmetin fiyatı (örn. 150.00 TL)'); // 10,2 daha yaygın bir boyut
+            $table->integer('duration')->comment('Hizmetin süresi (dakika olarak)'); // integer kullanarak sadece dakika bilgisi tutuyoruz
+            $table->string('image')->nullable()->comment('Hizmetin görsel bağlantısı'); // resim alanını string yaparak url gibi bağlantıları kaydediyoruz
+            $table->unsignedBigInteger('employee_id')->nullable()->comment('Hizmeti yapan çalışan');
+            $table->boolean('is_active')->default(true)->comment('Hizmet aktif mi?'); // Hizmetin aktif/pasif durumunu belirler
+            $table->decimal('discount_price', 10, 2)->nullable()->comment('Hizmet için indirimli fiyat'); // indirimli fiyat varsa
+            $table->unsignedBigInteger('category_id')->nullable()->comment('Hizmetin ait olduğu kategori'); // kategori ilişkisi (örn. cilt bakımı, saç bakımı)
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
+
     public function down(): void
     {
         Schema::dropIfExists('users');

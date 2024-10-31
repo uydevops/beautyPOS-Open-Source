@@ -23,7 +23,6 @@ class ReservationsController extends Controller
             ->select('tables.id as table_id', 'tables.name', 'tables.capacity', 'reservations.customer_name', 'reservations.reservation_date')
             ->get();
     
-        // Veriyi JSON olarak geri döndür
         return response()->json($reservedTables);
     }
 
@@ -64,17 +63,14 @@ class ReservationsController extends Controller
         }
     
         try {
-            // Rezervasyonu kontrol et
             $reservation = DB::table('reservations')->where('table_id', $table_id)->first();
             
             if (!$reservation) {
                 return response()->json(['status' => 'error', 'message' => 'Silinecek rezervasyon bulunamadı.'], 404);
             }
     
-            // Masa durumunu güncelle
             DB::table('tables')->where('id', $table_id)->update(['status' => 0]);
     
-            // İlgili rezervasyonu sil
             DB::table('reservations')->where('table_id', $table_id)->delete();
     
             return response()->json(['status' => 'success']);

@@ -8,7 +8,6 @@ class TablesController extends Controller
 {
     public function add(Request $request)
     {
-        // CSRF token'ı hariç tut
         $requestData = $request->except('_token');
         for ($i = 0; $i < count($requestData['name']); $i++) {
             DB::table('tables')->insert([
@@ -19,25 +18,22 @@ class TablesController extends Controller
     
         return redirect()->back()->with('success', 'Masalar başarıyla eklendi.');
     }
+    
     public function update(Request $request, $id)
     {
-        // CSRF token'ı hariç tut
         $requestData = $request->except('_token');
+        DB::table('tables')->where('id', $id)->update($requestData);
     
-        // Geçerli alanları kontrol et
-        if (!isset($requestData['name']) && !isset($requestData['capacity'])) {
-            return response()->json(['message' => 'Geçersiz veri gönderildi.'], 400);
+        if (isset($requestData['employee_id']) && is_null($requestData['employee_id'])) {
+            DB::table('employees')->where('table_id', $id)->update(['table_id' => null]);
         }
-    
-        // Masa verilerini güncelle
-        DB::table('tables')->where('id', $id)->update($requestData); // Dinamik olarak güncelle
     
         return response()->json(['message' => 'Table updated successfully!'], 200);
     }
+    
 
     public function delete($id)
     {
-        // Masa verilerini sil
         DB::table('tables')->where('id', $id)->delete();
     
         return redirect()->back()->with('success', 'Masa başarıyla silindi.');

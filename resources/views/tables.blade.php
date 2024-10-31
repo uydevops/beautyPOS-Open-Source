@@ -1,11 +1,6 @@
 @include('layouts.header')
 @include('layouts.module.tables_add_modal')
 
-<!-- Toastr CSS -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
-
-<!-- Toastr JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
 
 <div class="main-content">
@@ -34,8 +29,9 @@
 
                             <div class="row mb-4 justify-content-end">
                                 <div class="col-sm-4 text-end">
-                                    <button class="btn btn-danger mb-2" data-bs-toggle="modal"
-                                        data-bs-target="#addTableModal"><i class="fas fa-plus"></i> Yeni Masa Ekle</button>
+                                    <button class="btn btn-danger mb-2" data-bs-toggle="modal" data-bs-target="#addTableModal">
+                                        <i class="fas fa-plus"></i> Yeni Masa Ekle
+                                    </button>
                                 </div>
                             </div>
 
@@ -44,8 +40,8 @@
                                     <thead>
                                         <tr>
                                             <th>Masa Adı</th>
-                                            <th>Masa Kapasitesi</th>
                                             <th>Durumu</th>
+                                            <th>İlgili Personel</th>
                                             <th>İşlemler</th>
                                         </tr>
                                     </thead>
@@ -56,13 +52,18 @@
                                                 <input type="text" class="form-control" value="{{ $table->name }}" onchange="updateTable({{ $table->id }}, 'name', this.value)">
                                             </td>
                                             <td>
-                                                <input type="number" class="form-control" value="{{ $table->capacity }}" onchange="updateTable({{ $table->id }}, 'capacity', this.value)">
+                                                <select class="form-select" onchange="updateTable({{ $table->id }}, 'status', this.value)">
+                                                    <option value="1" {{ $table->status == 1 ? 'selected' : '' }}>Aktif</option>
+                                                    <option value="0" {{ $table->status == 0 ? 'selected' : '' }}>Pasif</option>
+                                                </select>
                                             </td>
 
                                             <td>
-                                                <select class="form-select" onchange="updateTable({{ $table->id }}, 'status', this.value)">
-                                                    <option value="1" {{ $table->status == 1 ? 'selected' : '' }}><p class="text-success"><i class="fas fa-check"></i> Aktif</p></option>
-                                                    <option value="0" {{ $table->status == 0 ? 'selected' : '' }}> <p class="text-danger"><i class="fas fa-times"></i> Pasif</p></option>
+                                                <select class="form-select" onchange="updateTable({{ $table->id }}, 'employee_id', this.value)">
+                                                    <option value="">Seçiniz</option>
+                                                    @foreach ($employees as $employee)
+                                                    <option value="{{ $employee->id }}" {{ $table->employee_id == $employee->id ? 'selected' : '' }}>{{ $employee->name }}</option>
+                                                    @endforeach
                                                 </select>
                                             </td>
                                             <td>
@@ -85,7 +86,10 @@
         </div> <!-- end container-fluid -->
     </div> <!-- end page-content -->
 </div> <!-- end main-content -->
+<!-- Toastr CSS -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+
+<!-- Toastr JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script>
     const ajaxSettings = {
@@ -102,7 +106,7 @@
     };
 
     const routes = {
-        updateTable: "{{ route('tables.update', ':id') }}", 
+        updateTable: "{{ route('tables.update', ':id') }}",
     };
 
     function makeAjaxRequest(url, data, onSuccess, onError) {
@@ -116,11 +120,7 @@
     }
 
     function showToast(type, message) {
-        if (type === 'success') {
-            toastr.success(message);
-        } else if (type === 'error') {
-            toastr.error(message);
-        }
+        toastr[type](message);
     }
 
     function updateTable(id, column, value) {
@@ -130,19 +130,16 @@
 
         const url = routes.updateTable.replace(':id', id);
 
+        console.log('Gönderilen veri:', data); // Konsol çıktısı
+
         makeAjaxRequest(url, data, handleUpdateSuccess, handleUpdateError);
     }
 
     function handleUpdateSuccess(response) {
-        if (response.message === 'Table updated successfully!') {
-            showToast('success', messages.successUpdate);
-        } else {
-            showToast('error', messages.errorUpdate);
-        }
+        showToast('success', messages.successUpdate);
     }
 
     function handleUpdateError(xhr) {
-        console.error(xhr);
         const message = xhr.responseJSON?.message || messages.generalError;
         showToast('error', message);
     }
