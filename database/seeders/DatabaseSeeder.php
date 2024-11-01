@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB; // DB sınıfını içe aktarın
+use Illuminate\Support\Facades\DB;
 use Faker\Factory as Faker;
 
 class DatabaseSeeder extends Seeder
@@ -13,6 +13,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Faker instance
+        $faker = Faker::create();
+
         // Admin kullanıcı oluştur
         DB::table('users')->insert([
             'name' => 'Admin',
@@ -20,50 +23,7 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('123456789'),
         ]);
 
-        // 20 tane masa oluştur
-        $tables = ['İçeri', 'Bahçe', 'Teras'];
-        for ($i = 1; $i <= 20; $i++) {
-            DB::table('tables')->insert([
-                'name' => $tables[array_rand($tables)] . ' ' . $i,
-                'capacity' => rand(2, 10),
-            ]);
-        }
-
-        // 10 tane çalışan oluştur
-        $faker = Faker::create();
-
-        for ($i = 0; $i < 10; $i++) {
-            DB::table('employees')->insert([
-                'name' => $faker->name,
-                'salary' => $faker->randomFloat(2, 3000, 10000), // 3000 ile 10000 arasında maaş
-                'leave_days' => $faker->numberBetween(0, 20),
-                'annual_leave_days' => 20, // Yıllık izin günleri
-                'position' => $faker->randomElement(['Doktor', 'Estetisyen']),
-                'phone' => $faker->phoneNumber,
-                'hire_date' => $faker->date(),
-                'email' => $faker->unique()->safeEmail,
-                'skills' => $faker->sentence,
-                'is_active' => $faker->boolean,
-            ]);
-        }
-
-        // Diğer çalışanlar için (örneğin, temizlik personeli)
-        for ($i = 0; $i < 5; $i++) {
-            DB::table('employees')->insert([
-                'name' => $faker->name,
-                'salary' => $faker->randomFloat(2, 1500, 3000), // 1500 ile 3000 arasında maaş
-                'leave_days' => $faker->numberBetween(0, 20),
-                'annual_leave_days' => 20, // Yıllık izin günleri
-                'position' => 'Diğer Çalışan', // Temizlik personeli gibi
-                'phone' => $faker->phoneNumber,
-                'hire_date' => $faker->date(),
-                'email' => $faker->unique()->safeEmail,
-                'skills' => $faker->sentence,
-                'is_active' => $faker->boolean,
-            ]);
-        }
-
-        // sms_send_settings tablosuna varsayılan kullanıcı adı ve şifre ekle
+        // SMS ayarlarını oluştur
         DB::table('sms_send_settings')->insert([
             'username' => 'username',
             'password' => 'password',
@@ -99,41 +59,76 @@ class DatabaseSeeder extends Seeder
                 'postal_code' => $faker->postcode,
                 'gender' => $faker->randomElement(['erkek', 'kadin', 'diger']),
                 'country' => $faker->country,
-                'is_vip' => $faker->boolean(20), // %20 VIP olma şansı
+                'is_vip' => $faker->boolean(20),
                 'total_visits' => $faker->numberBetween(1, 100),
                 'total_spent' => $faker->randomFloat(2, 100, 10000),
                 'last_visit' => $faker->dateTimeBetween('-1 year', 'now')->format('Y-m-d'),
-                'preferred_services' => $faker->words(3, true), // 3 kelime içeren hizmet türleri
+                'preferred_services' => $faker->words(3, true),
                 'notes' => $faker->sentence,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
         }
 
-        // Kategoriler
-        $categories = ['Botox', 'Dolgu', 'Lazer Epilasyon', 'Cilt Bakımı', 'Saç Bakımı', 'Masaj', 'Manikür', 'Pedikür', 'Diğer'];
-        foreach ($categories as $category) {
-            DB::table('categories')->insert([
-                'name' => $category,
-                'description' => $faker->sentence,
-                'is_active' => $faker->boolean,
-                'image' => $faker->imageUrl(),
+        // Hizmet ve oda isimleri
+        $services = ['Botox', 'Dolgu', 'Lazer Epilasyon', 'Cilt Bakımı', 'Saç Bakımı', 'Masaj', 'Manikür', 'Pedikür', 'Ağda', 'Lazer Tedavisi'];
+        $tables = ['Lazer Odası 1', 'Lazer Odası 2', 'Epilasyon Odası', 'Masaj Odası', 'Dolgu Odası', 'Botox Odası', 'Cilt Bakım Odası', 'Manikür Odası', 'Pedikür Odası', 'Ağda Odası'];
+
+        // Odaları oluştur
+        foreach ($tables as $tableName) {
+            DB::table('tables')->insert([
+                'name' => $tableName,
+                'capacity' => rand(2, 10),
+                'employee_id' => null, // Başlangıçta null, daha sonra atanacak
             ]);
         }
 
-        // Hizmetler
+        // Çalışanları oluştur
         for ($i = 0; $i < 10; $i++) {
-            DB::table('services')->insert([
-                'name' => $faker->sentence,
-                'description' => $faker->sentence,
-                'price' => $faker->randomFloat(2, 50, 500),
-                'duration' => $faker->numberBetween(15, 120),
-                'image' => $faker->imageUrl(),
-                'employee_id' => $faker->numberBetween(1, 10), // Örnek çalışan ID
+            $employeeId = DB::table('employees')->insertGetId([
+                'name' => $faker->name,
+                'salary' => $faker->randomFloat(2, 3000, 10000),
+                'leave_days' => $faker->numberBetween(0, 20),
+                'annual_leave_days' => 20,
+                'position' => $faker->randomElement(['Doktor', 'Estetisyen']),
+                'phone' => $faker->phoneNumber,
+                'hire_date' => $faker->date(),
+                'email' => $faker->unique()->safeEmail,
+                'skills' => $faker->sentence,
                 'is_active' => $faker->boolean,
-                'discount_price' => $faker->randomFloat(2, 50, 500),
-                'category_id' => $faker->randomElement(DB::table('categories')->pluck('id')->toArray()),
             ]);
+
+            // Odaya çalışan atayın
+            $tableId = DB::table('tables')->inRandomOrder()->first()->id;
+            DB::table('tables')->where('id', $tableId)->update(['employee_id' => $employeeId]);
+        }
+
+        // Hizmetleri ekleyin ve kategoriler oluşturun
+        foreach ($services as $service) {
+            $categoryId = DB::table('categories')->insertGetId([
+                'name' => $service,
+                'description' => $faker->sentence,
+                'is_active' => $faker->boolean,
+                'image' => $faker->imageUrl(),
+            ]);
+
+            // Hizmetleri oluştur
+            for ($i = 1; $i <= 2; $i++) { 
+                $employeeId = DB::table('employees')->inRandomOrder()->first()->id;
+                $tableId = DB::table('tables')->inRandomOrder()->first()->id;
+
+                DB::table('services')->insert([
+                    'name' => $service,
+                    'description' => $faker->sentence,
+                    'price' => $faker->randomFloat(2, 50, 500),
+                    'duration' => $faker->numberBetween(15, 120),
+                    'image' => $faker->imageUrl(),
+                    'employee_id' => $employeeId,
+                    'is_active' => $faker->boolean,
+                    'discount_price' => $faker->randomFloat(2, 50, 500),
+                    'category_id' => $categoryId,
+                ]);
+            }
         }
     }
 }

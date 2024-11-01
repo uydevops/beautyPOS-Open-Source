@@ -34,4 +34,20 @@ class AjaxController extends Controller
 
         return response()->json($this->data);
     }
+
+    public function findServices($services_id)
+    {
+        $this->data['services'] = DB::table('services')
+            ->select(
+                'employees.name as employee_name',
+                'tables.name as table_name'
+            )
+            ->join('employees', 'services.employee_id', '=', 'employees.id')
+            ->join('tables', 'employees.id', '=', 'tables.employee_id')
+            ->where('services.id', $services_id)
+            ->orderBy('services.id', 'desc')
+            ->get();
+
+        return response()->json($this->data);
+    }
 }

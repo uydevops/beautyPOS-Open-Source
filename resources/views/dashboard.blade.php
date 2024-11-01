@@ -3,6 +3,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.9.1/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<!---assets/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css--->
+<!---"assets/libs/spectrum-colorpicker2/spectrum.min.css--->
 
 @include('layouts.header')
 
@@ -16,38 +18,50 @@
                             <h4 class="card-title text-center mb-4"><i class="bi bi-calendar-plus"></i> Hızlı Randevu Oluştur</h4>
                             <p class="text-muted text-center mb-4">Güzellik salonu için hızlı randevu oluşturabilirsiniz.</p>
 
-                            <form id="appointment-form">
+                            <form action="{{ route('add-reservation') }}" method="POST" enctype="multipart/form-data">
+                                @csrf
                                 <div id="service-section" class="mb-4">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <label for="service-select" class="form-label"><i class="bi bi-scissors"></i> İşlem Seçin</label>
+                                        <label for="service-select" class="form-label"></label>
                                         <button type="button" class="btn btn-outline-primary btn-sm" id="add-service-btn">
                                             <i class="bi bi-plus-lg"></i> İşlem Ekle
                                         </button>
                                     </div>
 
-
-                                    <!---Müsteri Seçme--->
-                                    <div class="mb-3">
-                                        <label for="customer-select" class="form-label"><i class="bi bi-person"></i> Müşteri Seçin</label>
-                                        <select class="form-select rounded-3" id="customer-select">
-                                            <option selected disabled>Seçiniz</option>
-                                            <option value="1">Müşteri 1</option>
-                                            <option value="2">Müşteri 2</option>
-                                            <option value="3">Müşteri 3</option>
+                                    <div class="service-group mb-3">
+                                        <label class="form-label">
+                                            <i class="bi bi-person"></i> Müşteri Seçin
+                                        </label>
+                                        <select class="form-select select2" style="width: 100%; height: auto;">
+                                            <option name="customer_id" selected disabled>Seçiniz</option>
+                                            @foreach($customers as $customer)
+                                            <option value="{{ $customer->id }}">{{ $customer->first_name }} {{ $customer->last_name }}</option>
+                                            @endforeach
                                         </select>
                                     </div>
 
 
-                                    <div class="service-group mb-3">
-                                        <select class="form-select rounded-3 service-select" name="services[]">
+                                    <div class="mb-3">
+                                        <label for="service-select" class="form-label"><i class="bi bi-scissors"></i> İşlem Seçin</label>
+                                        <select class="form-select rounded-3 service-select" name="services[]" id="service-select">
                                             <option selected disabled>Seçiniz</option>
                                         </select>
                                     </div>
                                 </div>
 
                                 <div class="mb-3">
+                                    <label for="doctor-select" class="form-label"><i class="bi bi-person-badge"></i> Doktor Seçin</label>
+                                    <select class="form-select rounded-3" id="doctor-select" name="doctor_id">
+                                        <option selected disabled>Seçiniz</option>
+                                        <option value="1">Dr. Ali Yılmaz</option>
+                                        <option value="2">Dr. Ayşe Kaya</option>
+                                        <option value="3">Dr. Mehmet Can</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
                                     <label for="room-select" class="form-label"><i class="bi bi-door-open"></i> Oda Seçin</label>
-                                    <select class="form-select rounded-3" id="room-select">
+                                    <select class="form-select rounded-3" id="room-select" name="room_id">
                                         <option selected disabled>Seçiniz</option>
                                         <option value="1">Oda 1</option>
                                         <option value="2">Oda 2</option>
@@ -55,36 +69,30 @@
                                     </select>
                                 </div>
 
+                              
+
+
                                 <div class="mb-3">
                                     <label for="date-select" class="form-label"><i class="bi bi-calendar-date"></i> Gün Seçin</label>
-                                    <input type="text" class="form-control rounded-3" id="date-select" placeholder="Tarih seçin">
+                                    <input type="text" class="form-control rounded-3" id="date-select" placeholder="Tarih seçin" name="reservation_date">
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label"><i class="bi bi-clock"></i> Saat Seçin</label>
-                                    <select class="form-select rounded-3" id="time-select">
+                                    <select class="form-select rounded-3" id="time-select" name="reservation_time">
                                         <option selected disabled>Seçiniz</option>
                                     </select>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="doctor-select" class="form-label"><i class="bi bi-person-badge"></i> Doktor Seçin</label>
-                                    <select class="form-select rounded-3" id="doctor-select">
-                                        <option selected disabled>Seçiniz</option>
-                                        <option value="1">Dr. Ali Yılmaz</option>
-                                        <option value="2">Dr. Ayşe Kaya</option>
-                                        <option value="3">Dr. Mehmet Can</option>
-                                    </select>
-                                </div>
-
+                      
                                 <div class="mb-3">
                                     <label for="note" class="form-label"><i class="bi bi-sticky"></i> Not</label>
-                                    <textarea class="form-control rounded-3" id="note" rows="3" placeholder="Notunuzu buraya yazabilirsiniz"></textarea>
+                                    <textarea class="form-control rounded-3" id="note" rows="3" placeholder="Notunuzu buraya yazabilirsiniz" name="note"></textarea>
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="total-price" class="form-label"><i class="bi bi-currency-dollar"></i> Toplam Tutar</label>
-                                    <input type="text" class="form-control rounded-3" id="total-price" placeholder="Toplam tutar" readonly>
+                                    <input type="text" class="form-control rounded-3" id="total-price" placeholder="Toplam tutar" name="total_price" readonly>
                                 </div>
 
                                 <div class="text-center mt-4">
@@ -102,7 +110,11 @@
 </div>
 
 
+
+
 @include('layouts.footer')
+
+
 <script>
     const dateSelect = document.getElementById("date-select");
     const serviceSelect = document.querySelector(".service-select");

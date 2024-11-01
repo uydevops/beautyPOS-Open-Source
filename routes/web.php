@@ -42,7 +42,7 @@ Route::group(['middleware' => AuthMiddleware::class], function () {
 
     Route::get('/empty-table', [ReservationsController::class, 'emptyTable'])->name('empty-table');
     Route::get('/reserved-table', [ReservationsController::class, 'reservedTable'])->name('reserved-table');
-    Route::post('/reservations/add', [ReservationsController::class, 'add'])->name('reserve-table');
+    Route::post('/reservations/add', [ReservationsController::class, 'add'])->name('add-reservation');  
     Route::post('/reservations/release', [ReservationsController::class, 'release'])->name('release-table');
 
     //feedback
@@ -91,6 +91,7 @@ Route::group(['middleware' => AuthMiddleware::class], function () {
 
     Route::get('/randevuServisleri', [AjaxController::class, 'selectedServices'])->name('ajax.selectedServices');
     Route::get('/emptyDate/{dmy}', [AjaxController::class, 'emptyDate'])->name('ajax.emptyDate');
+    Route::get('/findServices/{services_id}', [AjaxController::class, 'findServices'])->name('ajax.findServices');
 
 
 

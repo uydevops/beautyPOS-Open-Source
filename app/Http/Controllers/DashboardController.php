@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-//Method Illuminate\Support\Collection::items does not exist.
 use Illuminate\Support\Collection;
 
 class DashboardController extends Controller
@@ -13,7 +12,7 @@ class DashboardController extends Controller
     {
      
         $this->data['customers'] = DB::table('customers')->get();
-        return view('dashboard');
+        return view('dashboard', $this->data);
     }
 
     public function users()
