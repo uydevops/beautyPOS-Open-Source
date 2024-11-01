@@ -37,9 +37,10 @@ class AjaxController extends Controller
 
     public function findServices($services_id)
     {
-        $this->data['services'] = DB::table('services')
+        $this->data['doctors'] = DB::table('services')
             ->select(
-                'employees.name as employee_name',
+                'employees.id as doctor_id',
+                'employees.name as doctor_name',
                 'tables.name as table_name'
             )
             ->join('employees', 'services.employee_id', '=', 'employees.id')
